@@ -5,7 +5,7 @@
             v-model="selectedMapId" 
             @change="handleMapChange"
             style="width: 200px; margin-left: 10px;"
-            placeholder="请选择地图"
+            placeholder="请选择任意地图"
         >
             <el-option
                 v-for="item in MapList"
