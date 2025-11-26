@@ -61,6 +61,17 @@ const routes = [
             icon: '🗺️',
             color: '#42b883'
         }
+    },
+    {
+        path: '/echartsLager',
+        name: 'EchartsLager',
+        component: () => import('@/views/EchartsLager.vue'),
+        meta: {
+            title: 'Echarts大数据量展示',
+            description: 'Echarts大数据量展示',
+            icon: '📊',
+            color: '#42b883'
+        }
     }
 ];
 export default routes;

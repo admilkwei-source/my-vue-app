@@ -12,3 +12,8 @@ export const register = (data: any) => {
 export const getCaptcha = () => {
     return axiosInstance.get('/api/user/getCaptcha');
 }
+
+// 获取加密公钥
+export const getEncryptionKey = () => {
+    return axiosInstance.get('/api/user/getEncryptionKey');
+}

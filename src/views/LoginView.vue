@@ -165,6 +165,8 @@ import { User, Lock, UserFilled, Picture } from '@element-plus/icons-vue'
 import { login, register, getCaptcha } from '@/utils/requestApi/user'
 import { useUserInfoStore } from '@/stores/userInfo'
 import { useRouter } from 'vue-router'
+import PasswordEncryptor from '@/utils/cryptoUtil'
+import { getEncryptionKey } from '@/utils/requestApi/user'
 
 defineOptions({
   name: 'LoginView',
@@ -264,6 +266,15 @@ const refreshCaptcha = async () => {
   }
 }
 
+const encryptionKey = ref<string>('');
+const iv = ref<string>('');
+// 获取加密公钥
+const getEncryptionKeyFn = async () : Promise<void> => {
+  const { data: { data } } = await getEncryptionKey();
+  encryptionKey.value = data.encryptionKey;
+  iv.value = data.iv;
+}
+
 // 处理登录
 const handleLogin = async () => {
   if (!loginFormRef.value) return
@@ -271,9 +282,14 @@ const handleLogin = async () => {
   try {
     // 验证表单
     await loginFormRef.value.validate()
-    
-    isLoading.value = true
-    
+
+    isLoading.value = true;
+    console.log(encryptionKey.value, iv.value);
+    // 密码加密传输
+    const passwordEncryptor = new PasswordEncryptor(encryptionKey.value, iv.value);
+    const encryptedPassword = passwordEncryptor.encryptPassword(loginForm.password);
+    loginForm.password = encryptedPassword;
+
     // 开始调用登录接口进行登录
     const res = await login(loginForm)
     userInfoStore.setUserData(res.data)
@@ -296,14 +312,16 @@ const handleRegister = async () => {
 
   try {
     // 验证表单
-    await registerFormRef.value.validate()
-    
-    isRegistering.value = true
+    await registerFormRef.value.validate();
+    isRegistering.value = true;
+
+    const passwordEncryptor = new PasswordEncryptor(encryptionKey.value, iv.value);
+    const encryptedPassword = passwordEncryptor.encryptPassword(registerForm.password);
     
     // 开始调用注册接口
     const res = await register({
       username: registerForm.username,
-      password: registerForm.password,
+      password: encryptedPassword,
       nickname: registerForm.nickname,
       captcha: registerForm.captcha,
     })
@@ -330,7 +348,8 @@ const handleRegister = async () => {
 
 // 组件挂载时获取验证码
 onMounted(() => {
-  refreshCaptcha()
+  refreshCaptcha();
+  getEncryptionKeyFn();
 })
 </script>
 
